@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Monumento</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+<body>
+    <h2>Chat Monumento</h2>
+
+    <label>
+        Role:
+        <select id="role">
+            <option value="user">Utilisateur</option>
+            <option value="guide">Guide</option>
+        </select>
+    </label>
+
+    <input id="nom" type="text" placeholder="Nom" >
+
+    <button onclick="join() ">Rejoindre le chat</button>
+
+    <div id="chatZone" style="display: none">
+        <h3>Messages</h3>
+        <ul id="chat"></ul>
+
+        <input type="text" id="msg" placeholder="Ecris ton message" >
+        <button onclick="sendMessage()">Envoyer</button>
+    </div>
+
+    <script>
+        const socket = io('http://localhost:3000', {
+            auth: {
+                token: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyTmFtZSI6ImFkbWluIiwiaWF0IjoxNzU4MjA0OTQyLCJleHAiOjE3NTgyMDY3NDJ9.rBO8y4oKvLYiOxu7GZntNwdEg2544omIP8yrzksInlBNzcKsS1pT04SKw1ts7g7f0UbzIkhK0SJYpnPJXTjT8rlEkxtMS5yEbT5v-n3u1hfqbynfHmjA7hsCxtbUCawLRapy4N4jiNn3vp-KzJ6u8__Fl_216Zpxjz8kdqCspNugrtAb43IldZh988Kou7Jfwh9a04-YYdUx3lru5q3behsXgLeSPkzm5FoP3C-IZOzl6NDcZdrBMFtex47pUdEG4GkqdL4d0AE0dzLhd0xFWAitXFu9bOJB0SdGGQtJAsPflFzq-1ZwL2TMbKmm7jD4D-5NNcQdGzFdcD60XOwkUg"
+            }
+        });
+
+        let monumentId = 1
+        let role, user
+
+        function join() {
+            role = document.getElementById('role').value
+            user = document.getElementById('nom').value
+            if (!user) {
+                alert("Veuillez entrer un nom")
+                return
+            }
+            socket.emit('joinMonument', { monumentId, role, user });
+            document.getElementById('chatZone').style.display = 'block'
+        }
+
+        function sendMessage() {
+            const message = document.getElementById('msg').value;
+            if (message.trim() === '') return;
+            socket.emit('sendMessage', { monumentId, role, message });
+            document.getElementById('msg').value = '';
+        }
+
+        socket.on('newMessage', (msg) => {
+            const li = document.createElement('li');
+            li.textContent = `${msg.user} (${msg.role}): ${msg.message}`;
+            document.getElementById('chat').appendChild(li);
+        });
+
+        socket.on("chatHistory", (history) => {
+            history.forEach(msg => {
+                const li = document.createElement('li');
+                li.textContent = `${msg.user} (${msg.role}): ${msg.message}`;
+                document.getElementById('chat').appendChild(li);
+            });
+        });
+    </script>
+</body>
+</html>

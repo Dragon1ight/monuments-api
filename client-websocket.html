@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Client WebSocket - Notifications Monumento</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .connected { background-color: #d4edda; color: #155724; }
+        .disconnected { background-color: #f8d7da; color: #721c24; }
+        .notification { background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .monument-info { background-color: #f8f9fa; padding: 10px; margin: 10px 0; border-radius: 3px; }
+        input, button { padding: 8px; margin: 5px; }
+        #messages { max-height: 400px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔔 Client WebSocket - Notifications Monumento</h1>
+        
+        <div>
+            <label>Token JWT: </label>
+            <input type="text" id="token" placeholder="Collez votre token JWT ici" style="width: 400px;">
+            <button onclick="connect()">Se connecter</button>
+            <button onclick="disconnect()">Se déconnecter</button>
+        </div>
+        
+        <div id="status" class="status disconnected">❌ Non connecté</div>
+        
+        <div id="messages"></div>
+        
+        <div style="margin-top: 20px; padding: 15px; background-color: #e9ecef; border-radius: 5px;">
+            <h3>📋 Instructions :</h3>
+            <ol>
+                <li>Démarrez le serveur : <code>npm run dev</code></li>
+                <li>Connectez-vous pour obtenir un token : <code>POST /api/login</code></li>
+                <li>Collez le token dans le champ ci-dessus</li>
+                <li>Cliquez sur "Se connecter"</li>
+                <li>Créez un monument avec <code>POST /api/monuments</code></li>
+                <li>Regardez la notification apparaître ici !</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        let socket = null;
+
+        function connect() {
+            const token = document.getElementById('token').value;
+            if (!token) {
+                alert('Veuillez entrer un token JWT');
+                return;
+            }
+
+            socket = io('http://localhost:3000', {
+                auth: { token: token }
+            });
+
+            socket.on('connect', () => {
+                document.getElementById('status').textContent = '✅ Connecté - En attente des notifications...';
+                document.getElementById('status').className = 'status connected';
+                addMessage('🔌 Connexion établie au WebSocket');
+            });
+
+            socket.on('newMonument', (data) => {
+                addNotification(data);
+            });
+
+            socket.on('connect_error', (error) => {
+                document.getElementById('status').textContent = '❌ Erreur: ' + error.message;
+                document.getElementById('status').className = 'status disconnected';
+                addMessage('❌ Erreur de connexion: ' + error.message);
+            });
+
+            socket.on('disconnect', () => {
+                document.getElementById('status').textContent = '🔌 Déconnecté';
+                document.getElementById('status').className = 'status disconnected';
+                addMessage('🔌 Déconnexion du WebSocket');
+            });
+        }
+
+        function disconnect() {
+            if (socket) {
+                socket.disconnect();
+                socket = null;
+            }
+        }
+
+        function addMessage(msg) {
+            const div = document.createElement('div');
+            div.textContent = new Date().toLocaleTimeString() + ' - ' + msg;
+            document.getElementById('messages').appendChild(div);
+            document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
+        }
+
+        function addNotification(data) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.innerHTML = `
+                <h3>🔔 NOUVELLE NOTIFICATION REÇUE !</h3>
+                <div class="monument-info">
+                    <strong>📋 Nouveau monument créé :</strong><br>
+                    <strong>ID:</strong> ${data.data.id}<br>
+                    <strong>Titre:</strong> ${data.data.title}<br>
+                    <strong>Description:</strong> ${data.data.description}<br>
+                    <strong>Date:</strong> ${new Date(data.data.createdAt).toLocaleString()}
+                </div>
+            `;
+            document.getElementById('messages').appendChild(notification);
+            document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
+        }
+    </script>
+</body>
+</html>
