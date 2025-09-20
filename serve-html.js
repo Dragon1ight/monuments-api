@@ -11,7 +11,8 @@ const server = http.createServer((req, res) => {
                 res.end('File not found');
                 return;
             }
-            res.writeHead(200, { 'Content-Type': 'text/html' });
+            // ...
+            res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
             res.end(data);
         });
     } else {
