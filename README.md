@@ -2,6 +2,7 @@
 
 API REST pour la gestion des monuments avec système de favoris et notifications WebSocket en temps réel.
 
+https://github.com/user-attachments/assets/8d050387-e725-4d5c-81c6-245fe43302a6
 ## 📋 Fonctionnalités
 
 ### ✅ Modèles de données
