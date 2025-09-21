@@ -174,10 +174,11 @@ Notification reçue lors de la création d'un monument
 4. Supprimer un favori : `DELETE /api/favorites/1`
 
 ### Test des notifications WebSocket
-1. Ouvrir le client WebSocket : `http://localhost:8080`
-2. Se connecter avec un token JWT
-3. Créer un monument : `POST /api/monuments`
-4. Vérifier la notification reçue en temps réel
+1. Lance dans le terminal node serve-html.js
+2. Ouvrir le client WebSocket : `http://localhost:8080`
+3. Se connecter avec un token JWT
+4. Créer un monument : `POST /api/monuments`
+5. Vérifier la notification reçue en temps réel
 
 ## 🛠️ Technologies utilisées
 
